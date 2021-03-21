@@ -23,7 +23,7 @@ variable "server_image_id" {
 }
 
 variable "ssh_keys" {
-  type        = list
+  type        = list(any)
   default     = []
   description = "SSH keys to inject into Rancher instances"
 }
@@ -99,7 +99,7 @@ variable "agent_instance_ssh_user" {
 
 variable "certmanager_version" {
   type        = string
-  default     = "0.9.1"
+  default     = "1.2.0"
   description = "Version of cert-manager to install"
 }
 
@@ -122,18 +122,22 @@ variable "aws_profile" {
 
 variable "public_subnets" {
   default     = []
-  type        = list
+  type        = list(any)
   description = "List of public subnet ids."
 }
 
 variable "private_subnets" {
   default     = []
-  type        = list
+  type        = list(any)
   description = "List of private subnet ids."
 }
 
 variable "install_k3s_version" {
+<<<<<<< HEAD
   default     = "1.20.4"
+=======
+  default     = "1.20.4+k3s1"
+>>>>>>> ce9d110 (chore: changes)
   type        = string
   description = "Version of K3S to install"
 }
@@ -146,19 +150,19 @@ variable "k3s_cluster_secret" {
 
 variable "extra_server_security_groups" {
   default     = []
-  type        = list
+  type        = list(any)
   description = "Additional security groups to attach to k3s server instances"
 }
 
 variable "extra_agent_security_groups" {
   default     = []
-  type        = list
+  type        = list(any)
   description = "Additional security groups to attach to k3s agent instances"
 }
 
 variable "aws_azs" {
   default     = null
-  type        = list
+  type        = list(any)
   description = "List of AWS Availability Zones in the VPC"
 }
 
@@ -184,13 +188,13 @@ variable "db_pass" {
 
 variable "private_subnets_cidr_blocks" {
   default     = []
-  type        = list
+  type        = list(any)
   description = "List of cidr_blocks of private subnets"
 }
 
 variable "public_subnets_cidr_blocks" {
   default     = []
-  type        = list
+  type        = list(any)
   description = "List of cidr_blocks of public subnets"
 }
 

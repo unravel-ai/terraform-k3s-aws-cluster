@@ -50,7 +50,19 @@ data "template_cloudinit_config" "k3s_server" {
 
   part {
     content_type = "text/x-shellscript"
-    content      = templatefile("${path.module}/files/k3s-install.sh", { install_k3s_version = local.install_k3s_version, k3s_exec = local.server_k3s_exec, k3s_cluster_secret = local.k3s_cluster_secret, is_k3s_server = true, k3s_url = aws_lb.server-lb.dns_name, k3s_storage_endpoint = local.k3s_storage_endpoint, k3s_storage_cafile = local.k3s_storage_cafile, k3s_disable_agent = local.k3s_disable_agent, k3s_tls_san = local.k3s_tls_san, k3s_deploy_traefik = local.k3s_deploy_traefik })
+    content = templatefile("${path.module}/files/k3s-install.sh", {
+      install_k3s_version  = local.install_k3s_version,
+      k3s_exec             = local.server_k3s_exec,
+      k3s_cluster_secret   = local.k3s_cluster_secret,
+      is_k3s_server        = true,
+      k3s_url              = aws_lb.server-lb.dns_name,
+      k3s_storage_endpoint = local.k3s_storage_endpoint,
+      k3s_storage_cafile   = local.k3s_storage_cafile,
+      k3s_disable_agent    = local.k3s_disable_agent,
+      k3s_tls_san          = local.k3s_tls_san,
+      k3s_deploy_traefik   = local.k3s_deploy_traefik,
+      k3s_cli_args         = "server --node-taint CriticalAddonsOnly=true:NoExecute --write-kubeconfig-mode 644 --node-label unravel.node.kubernetes.io/role=master"
+    })
   }
 
   part {
@@ -82,6 +94,18 @@ data "template_cloudinit_config" "k3s_agent" {
 
   part {
     content_type = "text/x-shellscript"
-    content      = templatefile("${path.module}/files/k3s-install.sh", { install_k3s_version = local.install_k3s_version, k3s_exec = local.agent_k3s_exec, k3s_cluster_secret = local.k3s_cluster_secret, is_k3s_server = false, k3s_url = aws_lb.server-lb.dns_name, k3s_storage_endpoint = local.k3s_storage_endpoint, k3s_storage_cafile = local.k3s_storage_cafile, k3s_disable_agent = local.k3s_disable_agent, k3s_tls_san = local.k3s_tls_san, k3s_deploy_traefik = local.k3s_deploy_traefik })
+    content = templatefile("${path.module}/files/k3s-install.sh", {
+      install_k3s_version  = local.install_k3s_version,
+      k3s_exec             = local.agent_k3s_exec,
+      k3s_cluster_secret   = local.k3s_cluster_secret,
+      is_k3s_server        = false,
+      k3s_url              = aws_lb.server-lb.dns_name,
+      k3s_storage_endpoint = local.k3s_storage_endpoint,
+      k3s_storage_cafile   = local.k3s_storage_cafile,
+      k3s_disable_agent    = local.k3s_disable_agent,
+      k3s_tls_san          = local.k3s_tls_san,
+      k3s_deploy_traefik   = local.k3s_deploy_traefik,
+      k3s_cli_args         = "agent --node-label unravel.node.kubernetes.io/role=agent"
+    })
   }
 }

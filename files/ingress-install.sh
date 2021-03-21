@@ -264,8 +264,10 @@ spec:
                   operator: NotIn
                   values:
                     - windows
-                - key: node-role.kubernetes.io/worker
-                  operator: Exists
+                - key: unravel.node.kubernetes.io/role
+                  operator: In
+		  values:
+		    - agent
       terminationGracePeriodSeconds: 60
       tolerations:
       - effect: NoExecute
