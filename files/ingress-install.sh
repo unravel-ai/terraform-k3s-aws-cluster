@@ -266,8 +266,8 @@ spec:
                     - windows
                 - key: unravel.node.kubernetes.io/role
                   operator: In
-		  values:
-		    - agent
+                  values:
+                    - agent
       terminationGracePeriodSeconds: 60
       tolerations:
       - effect: NoExecute
