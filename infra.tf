@@ -119,7 +119,7 @@ resource "aws_launch_template" "k3s_server" {
 
   network_interfaces {
     delete_on_termination = true
-    security_groups       = concat([aws_security_group.self.id], var.extra_server_security_groups, local.deploy_rds ? aws_security_group.database[0].id : null)
+    security_groups       = concat([aws_security_group.self.id], var.extra_server_security_groups)
   }
 
   tags = {
@@ -195,15 +195,16 @@ resource "aws_autoscaling_group" "k3s_agent" {
   min_size            = local.agent_node_count
   vpc_zone_identifier = local.private_subnets
 
-  target_group_arns = [
+  target_group_arns = local.create_external_nlb != 0 ? [
     aws_lb_target_group.agent-80.0.arn,
     aws_lb_target_group.agent-443.0.arn
-  ]
+  ] : []
 
   launch_template {
     id      = aws_launch_template.k3s_agent.id
     version = "$Latest"
   }
+
 }
 
 #############################
@@ -266,7 +267,7 @@ resource "aws_rds_cluster_instance" "k3s" {
 #############################
 resource "aws_route53_record" "rancher" {
   count    = local.install_rancher ? local.create_external_nlb : 0
-  zone_id  = data.aws_route53_zone.dns_zone.zone_id
+  zone_id  = data.aws_route53_zone.dns_zone[count.index].zone_id
   name     = "${local.name}.${local.domain}"
   type     = "CNAME"
   ttl      = 30

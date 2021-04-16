@@ -53,6 +53,7 @@ locals {
   install_rancher             = var.install_rancher
   install_nginx_ingress       = var.install_nginx_ingress
   create_external_nlb         = var.create_external_nlb ? 1 : 0
+  lb_subnets                  = length(var.lb_subnets) > 0 ? var.lb_subnets : local.public_subnets
   registration_command        = var.registration_command
   rancher_password            = var.rancher_password
 }

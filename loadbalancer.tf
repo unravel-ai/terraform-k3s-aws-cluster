@@ -31,7 +31,7 @@ resource "aws_lb" "lb" {
   name               = substr("${local.name}-ext-${random_pet.lb.id}", 0, 24)
   internal           = false
   load_balancer_type = "network"
-  subnets            = local.public_subnets
+  subnets            = local.lb_subnets 
 
   tags = {
     "kubernetes.io/cluster/${local.name}" = ""

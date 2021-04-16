@@ -265,3 +265,7 @@ variable "rancher2_token_key" {
   description = "Rancher2 API token for authentication"
 }
 
+variable "lb_subnets" {
+  default = []
+  type    = list(any)
+}
