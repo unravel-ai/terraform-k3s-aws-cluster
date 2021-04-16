@@ -73,29 +73,29 @@ resource "aws_security_group_rule" "self_k3s_server" {
 }
 
 resource "aws_security_group" "database" {
-  count       = local.deploy_rds
+  count  = local.deploy_rds
   name   = "${local.name}-database"
   vpc_id = data.aws_vpc.default.id
 }
 
 resource "aws_security_group_rule" "database_self" {
-  count       = local.deploy_rds
+  count             = local.deploy_rds
   type              = "ingress"
   from_port         = 5432
   to_port           = 5432
   protocol          = "TCP"
   self              = true
-  security_group_id = aws_security_group.database.id
+  security_group_id = aws_security_group.database[count.index].id
 }
 
 resource "aws_security_group_rule" "database_egress_all" {
-  count       = local.deploy_rds
+  count             = local.deploy_rds
   type              = "egress"
   from_port         = 0
   to_port           = 0
   protocol          = "-1"
   cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = aws_security_group.database.id
+  security_group_id = aws_security_group.database[count.index].id
 }
 
 #############################
@@ -119,7 +119,7 @@ resource "aws_launch_template" "k3s_server" {
 
   network_interfaces {
     delete_on_termination = true
-    security_groups       = concat([aws_security_group.self.id, aws_security_group.database.id], var.extra_server_security_groups)
+    security_groups       = concat([aws_security_group.self.id], var.extra_server_security_groups, local.deploy_rds ? aws_security_group.database[0].id : null)
   }
 
   tags = {
@@ -241,7 +241,7 @@ resource "aws_rds_cluster" "k3s" {
   master_password                 = local.db_pass
   preferred_maintenance_window    = "fri:11:21-fri:11:51"
   db_subnet_group_name            = aws_db_subnet_group.private.0.id
-  vpc_security_group_ids          = [aws_security_group.database.id]
+  vpc_security_group_ids          = [aws_security_group.database[count.index].id]
   storage_encrypted               = true
 
   preferred_backup_window   = "11:52-19:52"
