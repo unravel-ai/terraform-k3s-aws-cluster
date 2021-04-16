@@ -3,12 +3,14 @@
 #############################
 
 resource "aws_security_group" "ingress" {
-  name   = "${local.name}-ingress"
+  name   = "${local.name}-k3s-ingress"
   vpc_id = data.aws_vpc.default.id
+  tags = {
+    Name = "${local.name}-k3s-ingress"
+  }
 }
 
 resource "aws_security_group_rule" "ingress_http" {
-  name              = "${local.name}-ingress-http"
   type              = "ingress"
   from_port         = 80
   to_port           = 80
@@ -18,7 +20,6 @@ resource "aws_security_group_rule" "ingress_http" {
 }
 
 resource "aws_security_group_rule" "ingress_https" {
-  name              = "${local.name}-ingress-https"
   type              = "ingress"
   from_port         = 443
   to_port           = 443
@@ -28,7 +29,6 @@ resource "aws_security_group_rule" "ingress_https" {
 }
 
 resource "aws_security_group_rule" "ingress_self" {
-  name              = "${local.name}-ingress-self"
   type              = "ingress"
   from_port         = 0
   to_port           = 0
@@ -38,7 +38,6 @@ resource "aws_security_group_rule" "ingress_self" {
 }
 
 resource "aws_security_group_rule" "ingress_egress_all" {
-  name              = "${local.name}-ingress-egress-all"
   type              = "egress"
   from_port         = 0
   to_port           = 0
@@ -48,12 +47,14 @@ resource "aws_security_group_rule" "ingress_egress_all" {
 }
 
 resource "aws_security_group" "self" {
-  name   = "${local.name}-self"
+  name   = "${local.name}-k3s-self"
   vpc_id = data.aws_vpc.default.id
+  tags = {
+    Name = "${local.name}-k3s-self"
+  }
 }
 
 resource "aws_security_group_rule" "self_self" {
-  name              = "${local.name}-self-self"
   type              = "ingress"
   from_port         = 0
   to_port           = 0
@@ -63,7 +64,6 @@ resource "aws_security_group_rule" "self_self" {
 }
 
 resource "aws_security_group_rule" "self_k3s_server" {
-  name              = "${local.name}-self-k3s-server"
   type              = "ingress"
   from_port         = 6443
   to_port           = 6443
@@ -73,11 +73,13 @@ resource "aws_security_group_rule" "self_k3s_server" {
 }
 
 resource "aws_security_group" "database" {
+  count       = local.deploy_rds
   name   = "${local.name}-database"
   vpc_id = data.aws_vpc.default.id
 }
 
 resource "aws_security_group_rule" "database_self" {
+  count       = local.deploy_rds
   type              = "ingress"
   from_port         = 5432
   to_port           = 5432
@@ -87,6 +89,7 @@ resource "aws_security_group_rule" "database_self" {
 }
 
 resource "aws_security_group_rule" "database_egress_all" {
+  count       = local.deploy_rds
   type              = "egress"
   from_port         = 0
   to_port           = 0
