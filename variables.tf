@@ -36,7 +36,6 @@ variable "rancher_chart" {
 
 variable "name" {
   type        = string
-  default     = "rancher-demo"
   description = "Name for deployment"
 }
 
@@ -265,3 +264,4 @@ variable "rancher2_token_key" {
   type        = string
   description = "Rancher2 API token for authentication"
 }
+
