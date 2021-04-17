@@ -15,3 +15,7 @@ output "rancher_token" {
 output "rancher_endpoint" {
   value = contains(aws_lb.lb, "0") ? aws_lb.lb.0.dns_name : null
 }
+
+output "internal_lb" {
+  value = aws_lb.server-lb.dns_name
+}
