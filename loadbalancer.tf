@@ -1,11 +1,8 @@
-resource "random_pet" "lb" {}
-
 resource "aws_lb" "server-lb" {
-  name               = substr("${local.name}-int-${random_pet.lb.id}", 0, 32)
+  name               = substr("$local.name}-int", 0, 32)
   internal           = true
   load_balancer_type = "network"
   subnets            = local.private_subnets
-  depends_on         = [random_pet.lb]
 }
 
 resource "aws_lb_listener" "server-port_6443" {
@@ -17,21 +14,19 @@ resource "aws_lb_listener" "server-port_6443" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.server-6443.arn
   }
-  depends_on = [random_pet.lb]
 }
 
 resource "aws_lb_target_group" "server-6443" {
-  name       = substr("${local.name}-6443-${random_pet.lb.id}", 0, 32)
+  name       = substr("${local.name}-6443", 0, 32)
   port       = 6443
   protocol   = "TCP"
   vpc_id     = data.aws_vpc.default.id
-  depends_on = [random_pet.lb]
 }
 
 
 resource "aws_lb" "lb" {
   count              = local.create_external_nlb
-  name               = substr("${local.name}-ext-${random_pet.lb.id}", 0, 32)
+  name               = substr("${local.name}-ext", 0, 32)
   internal           = false
   load_balancer_type = "network"
   subnets            = local.lb_subnets
@@ -39,7 +34,6 @@ resource "aws_lb" "lb" {
   tags = {
     "kubernetes.io/cluster/${local.name}" = ""
   }
-  depends_on = [random_pet.lb]
 }
 
 resource "aws_lb_listener" "port_443" {
@@ -68,7 +62,7 @@ resource "aws_lb_listener" "port_80" {
 
 resource "aws_lb_target_group" "agent-443" {
   count    = local.create_external_nlb
-  name     = substr("${local.name}-443-${random_pet.lb.id}", 0, 32)
+  name     = substr("${local.name}-443", 0, 32)
   port     = 443
   protocol = "TCP"
   vpc_id   = data.aws_vpc.default.id
@@ -87,12 +81,11 @@ resource "aws_lb_target_group" "agent-443" {
   tags = {
     "kubernetes.io/cluster/${local.name}" = ""
   }
-  depends_on = [random_pet.lb]
 }
 
 resource "aws_lb_target_group" "agent-80" {
   count    = local.create_external_nlb
-  name     = substr("${local.name}-80-${random_pet.lb.id}", 0, 32)
+  name     = substr("${local.name}-80", 0, 32)
   port     = 80
   protocol = "TCP"
   vpc_id   = data.aws_vpc.default.id
@@ -111,5 +104,4 @@ resource "aws_lb_target_group" "agent-80" {
   tags = {
     "kubernetes.io/cluster/${local.name}" = ""
   }
-  depends_on = [random_pet.lb]
 }
