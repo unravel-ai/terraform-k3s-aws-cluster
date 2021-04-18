@@ -1,5 +1,5 @@
 resource "aws_lb" "server-lb" {
-  name               = substr("$local.name}-int", 0, 32)
+  name               = substr("${local.name}-int", 0, 32)
   internal           = true
   load_balancer_type = "network"
   subnets            = local.private_subnets
