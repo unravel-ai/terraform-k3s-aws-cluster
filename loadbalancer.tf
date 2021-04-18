@@ -5,6 +5,7 @@ resource "aws_lb" "server-lb" {
   internal           = true
   load_balancer_type = "network"
   subnets            = local.private_subnets
+  depends_on         = [random_pet.lb]
 }
 
 resource "aws_lb_listener" "server-port_6443" {
@@ -16,13 +17,15 @@ resource "aws_lb_listener" "server-port_6443" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.server-6443.arn
   }
+  depends_on = [random_pet.lb]
 }
 
 resource "aws_lb_target_group" "server-6443" {
-  name     = substr("${local.name}-6443-${random_pet.lb.id}", 0, 32)
-  port     = 6443
-  protocol = "TCP"
-  vpc_id   = data.aws_vpc.default.id
+  name       = substr("${local.name}-6443-${random_pet.lb.id}", 0, 32)
+  port       = 6443
+  protocol   = "TCP"
+  vpc_id     = data.aws_vpc.default.id
+  depends_on = [random_pet.lb]
 }
 
 
@@ -31,11 +34,12 @@ resource "aws_lb" "lb" {
   name               = substr("${local.name}-ext-${random_pet.lb.id}", 0, 32)
   internal           = false
   load_balancer_type = "network"
-  subnets            = local.lb_subnets 
+  subnets            = local.lb_subnets
 
   tags = {
     "kubernetes.io/cluster/${local.name}" = ""
   }
+  depends_on = [random_pet.lb]
 }
 
 resource "aws_lb_listener" "port_443" {
@@ -83,6 +87,7 @@ resource "aws_lb_target_group" "agent-443" {
   tags = {
     "kubernetes.io/cluster/${local.name}" = ""
   }
+  depends_on = [random_pet.lb]
 }
 
 resource "aws_lb_target_group" "agent-80" {
@@ -106,4 +111,5 @@ resource "aws_lb_target_group" "agent-80" {
   tags = {
     "kubernetes.io/cluster/${local.name}" = ""
   }
+  depends_on = [random_pet.lb]
 }
