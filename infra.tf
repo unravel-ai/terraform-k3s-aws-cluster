@@ -197,8 +197,6 @@ resource "aws_autoscaling_group" "k3s_agent" {
   vpc_zone_identifier = local.private_subnets
 
 
-  availability_zones = local.aws_azs
-
   target_group_arns = local.create_external_nlb != 0 ? [
     aws_lb_target_group.agent-80.0.arn,
     aws_lb_target_group.agent-443.0.arn
