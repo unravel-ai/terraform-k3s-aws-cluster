@@ -113,7 +113,7 @@ resource "aws_launch_template" "k3s_server" {
     ebs {
       encrypted   = true
       volume_type = "gp2"
-      volume_size = "50"
+      volume_size = "10"
     }
   }
 
@@ -136,18 +136,20 @@ resource "aws_launch_template" "k3s_server" {
 }
 
 resource "aws_launch_template" "k3s_agent" {
-  name_prefix   = "${local.name}-agent"
-  image_id      = local.agent_image_id
-  instance_type = local.agent_instance_type
-  user_data     = data.template_cloudinit_config.k3s_agent.rendered
+  for_each = {
+    for agent_spec in local.agent_specs : agent_spec.name => agent_spec
+  }
+  name_prefix   = "${local.name}-agent-${each.key}"
+  image_id      = data.aws_ami.agent_ami[each.key].id
+  instance_type = each.value.type
+  user_data     = data.template_cloudinit_config.k3s_agent[each.key].rendered
 
   block_device_mappings {
     device_name = "/dev/sda1"
-
     ebs {
       encrypted   = true
       volume_type = "gp2"
-      volume_size = "50"
+      volume_size = "25"
     }
   }
 
@@ -156,16 +158,11 @@ resource "aws_launch_template" "k3s_agent" {
     security_groups       = concat([aws_security_group.ingress.id, aws_security_group.self.id], var.extra_agent_security_groups)
   }
 
-  tags = {
-    Name = "${local.name}-agent"
-  }
-
   tag_specifications {
     resource_type = "instance"
-
-    tags = {
-      Name = "${local.name}-agent"
-    }
+    tags = merge({
+      Name = "${local.name}-agent-${each.key}"
+    }, each.value.tags)
   }
 }
 
@@ -189,20 +186,56 @@ resource "aws_autoscaling_group" "k3s_server" {
 }
 
 resource "aws_autoscaling_group" "k3s_agent" {
-  name_prefix         = "${local.name}-agent"
-  desired_capacity    = local.agent_node_count
-  max_size            = local.agent_node_count
-  min_size            = local.agent_node_count
+  for_each = {
+    for agent_spec in local.agent_specs : agent_spec.name => agent_spec
+  }
+  name_prefix      = "${local.name}-agent-${each.key}"
+  desired_capacity = each.value.capacity.desired
+  max_size         = each.value.capacity.max
+  min_size         = each.value.capacity.min
+
   vpc_zone_identifier = local.private_subnets
+
+
+  availability_zones = local.aws_azs
 
   target_group_arns = local.create_external_nlb != 0 ? [
     aws_lb_target_group.agent-80.0.arn,
     aws_lb_target_group.agent-443.0.arn
   ] : []
 
-  launch_template {
-    id      = aws_launch_template.k3s_agent.id
-    version = "$Latest"
+
+  mixed_instances_policy {
+    instances_distribution {
+      on_demand_base_capacity                  = each.value.on_demand_base_capacity
+      on_demand_percentage_above_base_capacity = each.value.on_demand_percentage_above_base_capacity
+      spot_max_price                           = each.value.spot_max_price
+    }
+
+    launch_template {
+
+      launch_template_specification {
+        launch_template_id = aws_launch_template.k3s_agent[each.key].id
+        version            = "$Latest"
+      }
+
+    }
+  }
+
+  tag {
+    key                 = "Name"
+    value               = "${local.name}-agent-${each.key}"
+    propagate_at_launch = true
+  }
+
+  dynamic "tag" {
+    for_each = each.value.tags
+
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
   }
 
 }

@@ -13,7 +13,39 @@ data "aws_route53_zone" "dns_zone" {
   name     = local.r53_domain
 }
 
-data "aws_ami" "ubuntu" {
+data "aws_ami" "agent_ami" {
+  for_each = {
+    for agent_spec in local.agent_specs : agent_spec.name => agent_spec
+  }
+  most_recent = true
+  owners      = ["099720109477"]
+
+  filter {
+    name = "name"
+    values = [
+      "ubuntu-minimal/images/*/ubuntu-bionic-18.04-*",
+      "ubuntu/images/*/ubuntu-bionic-18.04-*",
+    ]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = [each.value.arch]
+  }
+}
+
+
+data "aws_ami" "server_ami" {
   most_recent = true
   owners      = ["099720109477"]
 
@@ -83,6 +115,10 @@ data "template_cloudinit_config" "k3s_server" {
 }
 
 data "template_cloudinit_config" "k3s_agent" {
+
+  for_each = {
+    for agent_spec in local.agent_specs : agent_spec.name => agent_spec
+  }
   gzip          = true
   base64_encode = true
 
@@ -106,7 +142,7 @@ data "template_cloudinit_config" "k3s_agent" {
       k3s_disable_agent    = local.k3s_disable_agent,
       k3s_tls_san          = local.k3s_tls_san,
       k3s_deploy_traefik   = local.k3s_deploy_traefik,
-      k3s_cli_args         = "agent --node-label unravel.node.kubernetes.io/role=agent"
+      k3s_cli_args         = join(" ", concat(["agent --node-label unravel.node.kubernetes.io/role=agent"], [for label in each.value.labels : "--node-label ${label}"]))
     })
   }
 }

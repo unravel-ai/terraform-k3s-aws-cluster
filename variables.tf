@@ -10,16 +10,11 @@ variable "rancher_version" {
   description = "Version of Rancher to install"
 }
 
-variable "agent_image_id" {
-  type        = string
-  default     = null
-  description = "AMI to use for k3s agent instances"
-}
 
 variable "server_image_id" {
   type        = string
-  default     = null
   description = "AMI to use for k3s server instances"
+  default     = null
 }
 
 variable "ssh_keys" {
@@ -61,21 +56,30 @@ variable "server_instance_type" {
   default = "m5.large"
 }
 
-variable "agent_instance_type" {
-  type    = string
-  default = "m5.large"
-}
-
 variable "server_node_count" {
   type        = number
   default     = 1
   description = "Number of server nodes to launch"
 }
 
-variable "agent_node_count" {
-  type        = number
-  default     = 3
-  description = "Number of agent nodes to launch"
+variable "agent_specs" {
+  type = list(object({
+    name = string,
+    capacity = object({
+      desired = number,
+      max     = number,
+      min     = number,
+    }),
+    #image_id                                 = string,
+    arch                                     = string
+    labels                                   = list(string),
+    spot_max_price                           = number,
+    on_demand_base_capacity                  = number
+    on_demand_percentage_above_base_capacity = number,
+    tags                                     = map(string),
+    type                                     = string,
+  }))
+  description = "Configuration for agent for cluster distribution and pricing info"
 }
 
 variable "db_node_count" {

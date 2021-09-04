@@ -15,18 +15,18 @@ provider "aws" {
 }
 
 locals {
-  name                        = var.name
-  install_k3s_version         = var.install_k3s_version
-  k3s_cluster_secret          = var.k3s_cluster_secret != null ? var.k3s_cluster_secret : random_password.k3s_cluster_secret.result
-  server_instance_type        = var.server_instance_type
-  agent_instance_type         = var.agent_instance_type
-  agent_image_id              = var.agent_image_id != null ? var.agent_image_id : data.aws_ami.ubuntu.id
-  server_image_id             = var.server_image_id != null ? var.server_image_id : data.aws_ami.ubuntu.id
+  name                 = var.name
+  install_k3s_version  = var.install_k3s_version
+  k3s_cluster_secret   = var.k3s_cluster_secret != null ? var.k3s_cluster_secret : random_password.k3s_cluster_secret.result
+  server_instance_type = var.server_instance_type
+  server_image_id      = var.server_image_id != null ? var.server_image_id : data.aws_ami.server_ami.id
+  server_node_count    = var.server_node_count
+
+  agent_specs = var.agent_specs
+
   aws_azs                     = var.aws_azs
   public_subnets              = length(var.public_subnets) > 0 ? var.public_subnets : data.aws_subnet_ids.available.ids
   private_subnets             = length(var.private_subnets) > 0 ? var.private_subnets : data.aws_subnet_ids.available.ids
-  server_node_count           = var.server_node_count
-  agent_node_count            = var.agent_node_count
   ssh_keys                    = var.ssh_keys
   deploy_rds                  = var.k3s_storage_endpoint != "sqlite" ? 1 : 0
   db_instance_type            = var.db_instance_type
