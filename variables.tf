@@ -73,6 +73,7 @@ variable "agent_specs" {
     #image_id                                 = string,
     arch                                     = string
     labels                                   = list(string),
+    taints                                   = list(string),
     spot_max_price                           = number,
     on_demand_base_capacity                  = number
     on_demand_percentage_above_base_capacity = number,
