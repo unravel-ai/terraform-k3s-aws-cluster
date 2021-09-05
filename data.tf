@@ -142,7 +142,10 @@ data "template_cloudinit_config" "k3s_agent" {
       k3s_disable_agent    = local.k3s_disable_agent,
       k3s_tls_san          = local.k3s_tls_san,
       k3s_deploy_traefik   = local.k3s_deploy_traefik,
-      k3s_cli_args         = join(" ", concat(["agent --node-label unravel.node.kubernetes.io/role=agent"], [for label in each.value.labels : "--node-label ${label}"]))
+      k3s_cli_args = join(" ", concat(
+        ["agent --node-label unravel.node.kubernetes.io/role=agent"],
+        [for taint in each.values.taints : "--node-taint ${taint}"],
+      [for label in each.value.labels : "--node-label ${label}"]))
     })
   }
 }
