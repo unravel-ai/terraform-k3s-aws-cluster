@@ -94,7 +94,7 @@ data "template_cloudinit_config" "k3s_server" {
       k3s_disable_agent    = local.k3s_disable_agent,
       k3s_tls_san          = local.k3s_tls_san,
       k3s_deploy_traefik   = local.k3s_deploy_traefik,
-      k3s_cli_args         = "server --node-taint CriticalAddonsOnly=true:NoExecute --write-kubeconfig-mode 644 --node-label unravel.node.kubernetes.io/role=master"
+      k3s_cli_args         = "server --cluster-init --node-taint CriticalAddonsOnly=true:NoExecute --write-kubeconfig-mode 644 --node-label unravel.node.kubernetes.io/role=master"
     })
   }
 
