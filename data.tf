@@ -144,7 +144,7 @@ data "template_cloudinit_config" "k3s_agent" {
       k3s_deploy_traefik   = local.k3s_deploy_traefik,
       k3s_cli_args = join(" ", concat(
         ["agent --node-label unravel.node.kubernetes.io/role=agent"],
-        [for taint in each.values.taints : "--node-taint ${taint}"],
+        [for taint in each.value.taints : "--node-taint ${taint}"],
       [for label in each.value.labels : "--node-label ${label}"]))
     })
   }
