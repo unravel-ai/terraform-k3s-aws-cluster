@@ -94,7 +94,12 @@ data "template_cloudinit_config" "k3s_server" {
       k3s_disable_agent    = local.k3s_disable_agent,
       k3s_tls_san          = local.k3s_tls_san,
       k3s_deploy_traefik   = local.k3s_deploy_traefik,
-      k3s_cli_args         = "server --cluster-init --node-taint CriticalAddonsOnly=true:NoExecute --write-kubeconfig-mode 644 --node-label unravel.node.kubernetes.io/role=master"
+      k3s_cli_args = join(" ",
+        concat(
+          ["server --cluster-init --node-taint CriticalAddonsOnly=true:NoExecute --write-kubeconfig-mode 644 --node-label unravel.node.kubernetes.io/role=master"],
+          var.k3s_server_backup != null && var.k3s_server_backup.path != null ? [
+            "--etcd-s3 --cluster-reset-restore-path=${var.name} --etcd-s3-bucket=${var.k3s_server_backup.path} --etcd-s3-access-key=${var.k3s_server_backup.id} --etcd-s3-secret-key=${var.k3s_server_backup.secret}"
+      ] : []))
     })
   }
 
