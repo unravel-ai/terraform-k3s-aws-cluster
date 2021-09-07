@@ -275,6 +275,12 @@ variable "lb_subnets" {
   type    = list(any)
 }
 
+
+variable "enable_backup_server" {
+  type    = bool
+  default = true
+}
+
 variable "k3s_server_backup" {
   type        = map(any)
   description = "s3 IAM ACCESS_KEY and SECRET_KEY"
