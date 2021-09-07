@@ -98,7 +98,7 @@ data "template_cloudinit_config" "k3s_server" {
         concat(
           ["server --cluster-init --node-taint CriticalAddonsOnly=true:NoExecute --write-kubeconfig-mode 644 --node-label unravel.node.kubernetes.io/role=master"],
           var.k3s_server_backup != null && var.k3s_server_backup.path != null ? [
-            "--etcd-s3 --cluster-reset-restore-path=${var.name} --etcd-s3-bucket=${var.k3s_server_backup.path} --etcd-s3-access-key=${var.k3s_server_backup.id} --etcd-s3-secret-key=${var.k3s_server_backup.secret}"
+            "--etcd-s3 --cluster-reset --etcd-s3-region=${var.aws_region} --etcd-s3-folder=${name} --etcd-s3-bucket=${var.k3s_server_backup.path} --etcd-s3-access-key=${var.k3s_server_backup.id} --etcd-s3-secret-key=${var.k3s_server_backup.secret}"
       ] : []))
     })
   }
