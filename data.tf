@@ -83,7 +83,7 @@ data "template_cloudinit_config" "k3s_server" {
 
   part {
     content_type = "text/x-shellscript"
-    content = templatefile("${path.module}/files/utils.sh")
+    content      = templatefile("${path.module}/files/utils.sh", {})
   }
 
   part {
