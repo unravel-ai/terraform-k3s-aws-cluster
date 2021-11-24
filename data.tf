@@ -83,6 +83,18 @@ data "template_cloudinit_config" "k3s_server" {
 
   part {
     content_type = "text/x-shellscript"
+    content = templatefile("${path.module}/files/volume-bootstrap.sh", {
+      volume_size      = 2.5,
+      block_type       = "rancher",
+      k3s_type         = "server",
+      application_hash = var.name,
+      device           = "/dev/sdx",
+      mount_path       = "/var/lib/rancher"
+    })
+  }
+
+  part {
+    content_type = "text/x-shellscript"
     content = templatefile("${path.module}/files/k3s-install.sh", {
       install_k3s_version  = local.install_k3s_version,
       k3s_exec             = local.server_k3s_exec,
