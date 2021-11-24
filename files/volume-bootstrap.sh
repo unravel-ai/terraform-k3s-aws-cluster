@@ -11,6 +11,8 @@ MOUNT_PATH=${mount_path}
 SNAPSHOT_ID=
 VOLUME_ID=
 
+until ((jq -V && aws --version) > /dev/null 2>&1); do echo "Waiting for cloud-init..."; sleep 1; done
+
 function check_attached_volume() {
     echo "Checking for attached volumes..."
     VOLUME_ID=$( aws ec2 describe-volumes  --filter Name=attachment.instance-id,Values=$INSTANCE_ID Name=attachment.device,Values=$DEVICE  --query "Volumes[*].{ID:VolumeId}" --output text)
