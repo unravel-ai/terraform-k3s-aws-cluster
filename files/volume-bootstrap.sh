@@ -1,4 +1,7 @@
 #!/bin/bash
+
+until ((jq -V && aws --version) > /dev/null 2>&1); do echo "Waiting for cloud-init..."; sleep 1; done
+
 REGION=$(wget -q -O - http://169.254.169.254/latest/dynamic/instance-identity/document | jq '.region' -r)
 ZONE=$(wget -q -O - http://169.254.169.254/latest/dynamic/instance-identity/document | jq '.availabilityZone' -r)
 INSTANCE_ID=$(wget -q -O - http://169.254.169.254/latest/dynamic/instance-identity/document | jq '.instanceId' -r)
@@ -11,9 +14,19 @@ MOUNT_PATH=${mount_path}
 SNAPSHOT_ID=
 VOLUME_ID=
 
-until ((jq -V && aws --version) > /dev/null 2>&1); do echo "Waiting for cloud-init..."; sleep 1; done
-
 aws configure set region $REGION
+
+function create_nvme_to_ebs_mapping() {
+    NVME_BLOCKS=$(lsblk -r | grep nvme | awk '{print $1}' | xargs -I{} sh -c 'sudo ebsnvme-id -b /dev/{} | xargs -I% echo {}:%' | grep -e 'nvme[0-9]*n1:'$DEVICE)
+    for nvme_block in $NVME_BLOCKS
+    do
+        local block_name
+        block_name=$(echo $nvme_block | cut -f1 -d:)
+        sudo ln -s /dev/$block_name $DEVICE
+        sudo ln -s /dev/$block_name"p1" $PARTITION
+        echo $block_name" is mapped to device "$DEVICE
+    done
+}
 
 function check_attached_volume() {
     echo "Checking for attached volumes..."
@@ -114,5 +127,6 @@ then
     attach_volume
 fi
 
+create_nvme_to_ebs_mapping
 touch_partition_table
 mount_partition

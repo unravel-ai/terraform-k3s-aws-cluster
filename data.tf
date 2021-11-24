@@ -83,8 +83,13 @@ data "template_cloudinit_config" "k3s_server" {
 
   part {
     content_type = "text/x-shellscript"
+    content = templatefile("${path.module}/files/utils.sh")
+  }
+
+  part {
+    content_type = "text/x-shellscript"
     content = templatefile("${path.module}/files/volume-bootstrap.sh", {
-      volume_size      = 2.5,
+      volume_size      = 3,
       block_type       = "rancher",
       k3s_type         = "server",
       application_hash = var.name,
