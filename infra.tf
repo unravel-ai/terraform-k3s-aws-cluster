@@ -117,6 +117,10 @@ resource "aws_launch_template" "k3s_server" {
     }
   }
 
+  iam_instance_profile {
+    name = "apptr_instance_iam"
+  }
+
   network_interfaces {
     delete_on_termination = true
     security_groups       = concat([aws_security_group.ingress.id, aws_security_group.self.id], var.extra_server_security_groups)
