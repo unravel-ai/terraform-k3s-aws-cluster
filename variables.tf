@@ -103,7 +103,7 @@ variable "agent_instance_ssh_user" {
 
 variable "certmanager_version" {
   type        = string
-  default     = "1.2.0"
+  default     = "1.6.1"
   description = "Version of cert-manager to install"
 }
 
