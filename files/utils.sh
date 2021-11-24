@@ -176,4 +176,4 @@ if __name__ == "__main__":
     if get_all or args.block_dev or args.udev:
         print dev.get_block_device(args.udev)
 EOF
-sudo chmod u+x /usr/sbin/ebsnvme-id 
+sudo chmod 777 /usr/sbin/ebsnvme-id 

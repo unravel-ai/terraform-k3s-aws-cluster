@@ -95,6 +95,7 @@ function touch_partition_table() {
     if [[ $N_PARTITION -eq 0 ]]
     then
         echo 'start=2048, type=83' | sudo sfdisk /dev/sdx
+	sleep 2
         sudo mkfs.xfs $PARTITION
     else
         echo "Filesystem already exists."
@@ -107,6 +108,7 @@ function mount_partition() {
     if [[ -z "$IS_MOUNTED" ]]
     then
         echo "Mounting partition "$PARTITION" to "$MOUNT_PATH"..."
+	sudo mkdir -p $MOUNT_PATH
         sudo mount $PARTITION $MOUNT_PATH && \
             echo "Partition "$PARTITION" mounted."
     else
