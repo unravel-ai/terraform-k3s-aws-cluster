@@ -28,6 +28,7 @@ spec:
   targetNamespace: cattle-system
   valuesContent: |-
     hostname: ${rancher_hostname}
+    bootstrapPassword: ${rancher_password}
     ingress:
       extraAnnotations:
         kubernetes.io/ingress.class: "nginx"

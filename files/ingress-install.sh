@@ -687,4 +687,7 @@ spec:
         runAsNonRoot: true
         runAsUser: 2000
 EOF
+#
+kubectl annotate --overwrite ingressclass nginx ingressclass.kubernetes.io/is-default-class="true"
+#
 %{ endif }
