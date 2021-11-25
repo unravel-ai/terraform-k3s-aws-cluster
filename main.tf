@@ -103,8 +103,9 @@ EOF
 }
 
 resource "rancher2_bootstrap" "admin" {
-  count      = local.install_rancher ? 1 : 0
-  provider   = rancher2.bootstrap
-  password   = local.rancher_password
-  depends_on = [null_resource.wait_for_rancher]
+  count            = local.install_rancher ? 1 : 0
+  provider         = rancher2.bootstrap
+  password         = local.rancher_password
+  initial_password = local.rancher_password
+  depends_on       = [null_resource.wait_for_rancher]
 }
