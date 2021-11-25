@@ -29,6 +29,8 @@ spec:
   valuesContent: |-
     hostname: ${rancher_hostname}
     ingress:
+      extraAnnotations:
+	kubernetes.io/ingress.class: nginx
       tls:
         source: letsEncrypt
     letsEncrypt:
