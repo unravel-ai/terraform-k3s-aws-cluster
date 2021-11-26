@@ -11,6 +11,8 @@ until (curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION='v${install_k3s_versio
     sleep 2
 done
 
+
+
 %{ if is_k3s_server }
 until kubectl get pods -A | grep 'Running';
 do

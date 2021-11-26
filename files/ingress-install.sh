@@ -416,17 +416,19 @@ spec:
 # So a ClusterRole and a ClusterRoleBinding is required
 apiVersion: networking.k8s.io/v1
 kind: IngressClass
-metadata:
-  labels:
-    helm.sh/chart: ingress-nginx-4.0.10
-    app.kubernetes.io/name: ingress-nginx
-    app.kubernetes.io/instance: ingress-nginx
-    app.kubernetes.io/version: 1.1.0
-    app.kubernetes.io/managed-by: Helm
+metadata: 
+  annotate: 
+    ingressclass.kubernetes.io/is-default-class: "true"
+  labels: 
     app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/version: "1.1.0"
+    helm.sh/chart: ingress-nginx-4.0.10
   name: nginx
   namespace: ingress-nginx
-spec:
+spec: 
   controller: k8s.io/ingress-nginx
 ---
 # Source: ingress-nginx/templates/admission-webhooks/validating-webhook.yaml
@@ -687,7 +689,5 @@ spec:
         runAsNonRoot: true
         runAsUser: 2000
 EOF
-#
-kubectl annotate --overwrite ingressclass nginx ingressclass.kubernetes.io/is-default-class="true"
 #
 %{ endif }
