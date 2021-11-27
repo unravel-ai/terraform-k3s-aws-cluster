@@ -12,8 +12,10 @@ until (curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION='v${install_k3s_versio
 done
 
 
-
 %{ if is_k3s_server }
+
+[[ $(ls /var/lib/rancher/.apptr_server_is_backup) ]] && (systemctl stop k3s; k3s server --cluster-reset && systemctl start k3s)
+
 until kubectl get pods -A | grep 'Running';
 do
     echo 'Waiting for k3s startup'
