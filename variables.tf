@@ -62,9 +62,22 @@ variable "server_node_count" {
   description = "Number of server nodes to launch"
 }
 
+variable "server_specs" {
+  type = object({
+    spot_max_price                           = number,
+    on_demand_base_capacity                  = number
+    on_demand_percentage_above_base_capacity = number,
+  })
+  description = "Configuration for server for cluster distribution and pricing info"
+  default     = null
+}
+
 variable "agent_specs" {
   type = list(object({
     name = string,
+    storage = object({
+      size = number
+    }),
     capacity = object({
       desired = number,
       max     = number,

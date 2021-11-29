@@ -7,7 +7,7 @@ ZONE=$(wget -q -O - http://169.254.169.254/latest/dynamic/instance-identity/docu
 INSTANCE_ID=$(wget -q -O - http://169.254.169.254/latest/dynamic/instance-identity/document | jq '.instanceId' -r)
 SIZE=${volume_size}
 FILTERS='Name=tag:apptr_block_type,Values=${block_type} Name=tag:apptr_k3s_type,Values=${k3s_type} Name=tag:apptr_application_hash,Values=${application_hash}'
-TAG_SPECIFICATIONS='ResourceType=volume,Tags=[{Key=apptr_block_type,Value=${block_type}},{Key=apptr_k3s_type,Value=${k3s_type}},{Key=apptr_application_hash,Value=${application_hash}}]'
+TAG_SPECIFICATIONS='ResourceType=volume,Tags=[{Key=apptr_block_type,Value=${block_type}},{Key=Name,Value=${application_hash}-cloud-init},{Key=apptr_k3s_type,Value=${k3s_type}},{Key=apptr_application_hash,Value=${application_hash}}]'
 DEVICE=${device}
 PARTITION=$DEVICE"1"
 MOUNT_PATH=${mount_path}
@@ -34,16 +34,31 @@ function check_attached_volume() {
     [  -z "$VOLUME_ID" ] && echo 'No volumes attached.' || echo "volume-id "$VOLUME_ID" found."
 }
 
-function check_if_volume_available() {
+function check_volume_available() {
     echo "Checking for available volumes..."
-    VOLUME_ID=$(aws ec2 describe-volumes     --filters $FILTERS Name=availability-zone,Values=$ZONE Name=status,Values=available  --query "Volumes[*].{ID:VolumeId}" --output text | head -n 1)
-    [  -z "$VOLUME_ID" ] && echo 'No volumes available!' || echo "volume-id "$VOLUME_ID" found."
+    VOLUME_ID=$(aws ec2 describe-volumes  --filters $FILTERS Name=availability-zone,Values=$ZONE Name=status,Values=available  \
+		    --query "Volumes[*].{ID:VolumeId,time:CreateTime}" --no-paginate --output text | \
+            xargs -I% echo % | awk '{system("echo "$0" $(date --date "$2" +%s)  ");}' | \
+            sort -k3 -n -r | head -n 1 | cut -f1 -d' '
+	     )
+    if [  -z "$VOLUME_ID" ]; then
+	echo 'No volumes available!'
+    else
+	echo "volume-id "$VOLUME_ID" found."
+    fi
 }
 
-function check_for_snapshot_available() {
+function check_snapshot_available() {
     echo "Checking for compatible snapshots..."
-    SNAPSHOT_ID=$(aws ec2 describe-snapshots  --filters $FILTERS  --query "Snapshots[*].{ID:SnapshotId}"  --output text | head -n 1)
-    [  -z "$SNAPSHOT_ID" ] && echo 'No snapshot available.' || echo "snapshot-id "$SNAPSHOT_ID" found."
+    SNAPSHOT_ID=$(aws ec2 describe-snapshots  --filters $FILTERS  --query "Snapshots[*].{id:SnapshotId,time:StartTime}" --no-paginate  --output text | \
+            xargs -I% echo % | awk '{system("echo "$0" $(date --date "$2" +%s)  ");}' | \
+            sort -k3 -n -r | head -n 1 | cut -f1 -d' '
+		   )
+    if [  -z "$SNAPSHOT_ID" ]; then
+	echo 'No snapshot available.'
+    else
+	echo "snapshot-id "$SNAPSHOT_ID" found."
+    fi
 }
 
 function create_volume_from_snapshot() {
@@ -68,7 +83,7 @@ function create_empty_volume() {
 }
 
 function create_new_volume() {
-    check_for_snapshot_available
+    check_snapshot_available
     [ -z "$SNAPSHOT_ID" ] && create_empty_volume || create_volume_from_snapshot
 }
 
@@ -119,7 +134,7 @@ function mount_partition() {
 check_attached_volume
 if [ -z "$VOLUME_ID" ]
 then
-    check_if_volume_available
+    check_volume_available
     if [ -z "$VOLUME_ID" ]
     then
         create_new_volume

@@ -112,8 +112,8 @@ resource "aws_launch_template" "k3s_server" {
 
     ebs {
       encrypted   = true
-      volume_type = "gp2"
-      volume_size = "10"
+      volume_type = "gp3"
+      volume_size = "8"
     }
   }
 
@@ -152,8 +152,8 @@ resource "aws_launch_template" "k3s_agent" {
     device_name = "/dev/sda1"
     ebs {
       encrypted   = true
-      volume_type = "gp2"
-      volume_size = "25"
+      volume_type = "gp3"
+      volume_size = try(each.value.storage.size, "15")
     }
   }
 
@@ -175,15 +175,27 @@ resource "aws_autoscaling_group" "k3s_server" {
   desired_capacity    = local.server_node_count
   max_size            = local.server_node_count
   min_size            = local.server_node_count
-  vpc_zone_identifier = local.private_subnets
+  vpc_zone_identifier = [local.private_subnets[0]]
 
   target_group_arns = [
     aws_lb_target_group.server-6443.arn
   ]
 
-  launch_template {
-    id      = aws_launch_template.k3s_server.id
-    version = "$Latest"
+  dynamic "mixed_instances_policy" {
+    for_each = var.server_specs != null ? [""] : []
+    content {
+      instances_distribution {
+        on_demand_base_capacity                  = var.server_specs.on_demand_base_capacity
+        on_demand_percentage_above_base_capacity = var.server_specs.on_demand_percentage_above_base_capacity
+        spot_max_price                           = var.server_specs.spot_max_price
+      }
+      launch_template {
+        launch_template_specification {
+          launch_template_id = aws_launch_template.k3s_server.id
+          version            = "$Latest"
+        }
+      }
+    }
   }
 
   depends_on = [aws_rds_cluster_instance.k3s]
