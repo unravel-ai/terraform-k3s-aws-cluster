@@ -6,6 +6,6 @@ ssh_authorized_keys:
 %{ endfor }
 %{ endif }
 runcmd:
-- apt-get update
-- apt-get install -y software-properties-common jq awscli
+- DEBIAN_FRONTEND=noninteractive apt-get update
+- DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common jq awscli
 - DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
