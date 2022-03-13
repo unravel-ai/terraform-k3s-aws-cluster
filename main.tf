@@ -18,11 +18,12 @@ locals {
   name                 = var.name
   install_k3s_version  = var.install_k3s_version
   k3s_cluster_secret   = var.k3s_cluster_secret != null ? var.k3s_cluster_secret : random_password.k3s_cluster_secret.result
-  server_instance_type = var.server_instance_type
-  server_image_id      = var.server_image_id != null ? var.server_image_id : data.aws_ami.server_ami.id
-  server_node_count    = var.server_node_count
-
-  agent_specs = var.agent_specs
+  #
+  server_instance_type = var.server_specs != null && var.server_specs['instance_type'] ? var.server_specs['instance_type'] : "t3a.small"
+  server_image_id      = var.server_specs != null && var.server_specs['image_id'] ? var.server_specs['image_id'] : data.aws_ami.server_ami.id
+  server_node_count    = var.server_specs != null && var.server_specs['node_count'] ? var.server_specs['node_count'] : 1
+  #
+  agent_specs          = var.agent_specs
 
   aws_azs                     = var.aws_azs
   public_subnets              = length(var.public_subnets) > 0 ? var.public_subnets : data.aws_subnet_ids.available.ids

@@ -10,13 +10,6 @@ variable "rancher_version" {
   description = "Version of Rancher to install"
 }
 
-
-variable "server_image_id" {
-  type        = string
-  description = "AMI to use for k3s server instances"
-  default     = null
-}
-
 variable "ssh_keys" {
   type        = list(any)
   default     = []
@@ -51,19 +44,11 @@ variable "r53_domain" {
   description = "DNS domain for Route53 zone (defaults to domain if unset)"
 }
 
-variable "server_instance_type" {
-  type    = string
-  default = "m5.large"
-}
-
-variable "server_node_count" {
-  type        = number
-  default     = 1
-  description = "Number of server nodes to launch"
-}
-
 variable "server_specs" {
   type = object({
+    image_id                                 = string,
+    instance_type                            = string,
+    node_count                               = number,
     spot_max_price                           = number,
     on_demand_base_capacity                  = number
     on_demand_percentage_above_base_capacity = number,
@@ -74,7 +59,7 @@ variable "server_specs" {
 
 variable "agent_specs" {
   type = list(object({
-    name = string,
+    name    = string,
     storage = object({
       size = number
     }),
@@ -297,11 +282,10 @@ variable "enable_backup_server" {
 variable "k3s_server_backup" {
   type        = map(any)
   description = "s3 IAM ACCESS_KEY and SECRET_KEY"
-  default = {
+  default     = {
     path   = null
     id     = null
     secret = null
   }
 }
-
 
