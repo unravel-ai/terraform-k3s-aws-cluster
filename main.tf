@@ -19,9 +19,9 @@ locals {
   install_k3s_version  = var.install_k3s_version
   k3s_cluster_secret   = var.k3s_cluster_secret != null ? var.k3s_cluster_secret : random_password.k3s_cluster_secret.result
   #
-  server_instance_type = var.server_specs != null && var.server_specs["instance_type"] ? var.server_specs["instance_type"] : "t3a.small"
-  server_image_id      = var.server_specs != null && var.server_specs["image_id"] ? var.server_specs["image_id"] : data.aws_ami.server_ami.id
-  server_node_count    = var.server_specs != null && var.server_specs["node_count"] ? var.server_specs["node_count"] : 1
+  server_instance_type = var.server_specs != null && var.server_specs["instance_type"] != null ? var.server_specs["instance_type"] : "t3a.small"
+  server_image_id      = var.server_specs != null && var.server_specs["image_id"] != null ? var.server_specs["image_id"] : data.aws_ami.server_ami.id
+  server_node_count    = var.server_specs != null && var.server_specs["node_count"] != null? var.server_specs["node_count"] : 1
   #
   agent_specs          = var.agent_specs
 
